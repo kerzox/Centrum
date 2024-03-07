@@ -1,0 +1,10 @@
+textarea:focus,
+input:focus {
+  outline: none;
+}
+.input {
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 14px;
+}

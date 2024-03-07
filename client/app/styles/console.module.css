@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(45, 45, 45);
+  border-radius: 12px;
+  height: 100%;
+  max-height: 100%;
+  font-size: 14px;
+  justify-content: space-between;
+  overflow: hidden;
+  flex: 1;
+}
+
+.log {
+  overflow: auto;
+  padding: 12px;
+}
+
+.footer {
+  margin-left: -12px;
+  padding-left: 12px;
+}
+
+.error {
+  color: rgba(255, 83, 83, 1);
+}
+
+.fatal {
+  background-color: rgba(255, 83, 83, 1);
+  color: black;
+}
+
+.warn {
+  color: rgb(255, 206, 83);
+}

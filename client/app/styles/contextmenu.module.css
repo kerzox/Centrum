@@ -1,0 +1,29 @@
+.contextMenuContainer {
+  position: absolute;
+  background-color: #2b2a33;
+  display: flex;
+  width: 190px;
+  padding: 4px;
+  border: 1px outset #929292;
+  border-radius: 4px;
+  flex-direction: column;
+}
+
+.item {
+  list-style-type: none;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
