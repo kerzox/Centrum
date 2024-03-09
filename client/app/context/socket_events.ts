@@ -3,43 +3,27 @@ interface EventCallback {
 }
 
 class EventEmitter {
-  private events: { [key: string]: EventCallback[] } = {};
-  private uniqueEvents: {
-    [key: string]: { id: string; evt: EventCallback }[];
-  } = {};
-  private onceListeners: { [key: string]: EventCallback[] } = {};
+  private multi_events: { [key: string]: EventCallback[] } = {};
+
+  private events: { [key: string]: EventCallback } = {};
+  private onceListeners: { [key: string]: EventCallback } = {};
 
   on(eventName: string, callback: EventCallback): void {
-    if (!this.events[eventName]) {
-      this.events[eventName] = [];
-    }
-
-    this.events[eventName].push(callback);
+    this.events[eventName] = callback;
   }
 
-  unique(eventName: string, id: string, callback: EventCallback): void {
-    if (!this.uniqueEvents[eventName]) {
-      this.uniqueEvents[eventName] = [];
+  multi(eventName: string, callback: EventCallback): void {
+    if (!this.multi_events[eventName]) {
+      this.multi_events[eventName] = [];
     }
-    this.uniqueEvents[eventName] = this.uniqueEvents[eventName].filter(
-      (evt) => evt.id !== id
-    );
-    this.uniqueEvents[eventName].push({ id: id, evt: callback });
+    this.multi_events[eventName].push(callback);
   }
 
   once(eventName: string, callback: EventCallback): void {
-    if (!this.onceListeners[eventName]) {
-      this.onceListeners[eventName] = [];
-    }
-
-    this.onceListeners[eventName].push(callback);
+    this.onceListeners[eventName] = callback;
   }
 
   leave(eventName: string) {
-    if (this.uniqueEvents[eventName]) {
-      delete this.uniqueEvents[eventName];
-    }
-
     if (this.events[eventName]) {
       delete this.events[eventName];
     }
@@ -49,30 +33,15 @@ class EventEmitter {
     }
   }
 
-  wipeUniques(id: string) {
-    for (const key in this.uniqueEvents) {
-      if (this.uniqueEvents.hasOwnProperty(key)) {
-        const value = this.uniqueEvents[key];
-        this.uniqueEvents[key] = value.filter((e) => e.id !== id);
-      }
-    }
-  }
-
   emit(eventName: string, data: any): void {
-    if (this.events[eventName]) {
-      this.events[eventName].forEach((callback) => {
-        callback(data);
-      });
+    if (this.multi_events[eventName] != null) {
+      this.multi_events[eventName].forEach((call) => call(data));
     }
-    if (this.uniqueEvents[eventName]) {
-      this.uniqueEvents[eventName].forEach((callback) => {
-        callback.evt(data);
-      });
+    if (this.events[eventName] != null) {
+      this.events[eventName](data);
     }
-    if (this.onceListeners[eventName]) {
-      this.onceListeners[eventName].forEach((callback) => {
-        callback(data);
-      });
+    if (this.onceListeners[eventName] != null) {
+      this.onceListeners[eventName](data);
       delete this.onceListeners[eventName];
     }
   }

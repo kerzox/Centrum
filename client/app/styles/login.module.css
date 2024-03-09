@@ -1,7 +1,7 @@
 .login {
   background-color: rgb(30, 30, 30);
-  padding: 12px;
-  width: 450px;
+
+  width: 500px;
   height: 500px;
   border-radius: 12px;
   font-family: "Montserrat", sans-serif;
@@ -13,6 +13,7 @@
 
 .header {
   flex: 10%;
+  padding: 12px;
 }
 
 .main {
@@ -20,6 +21,7 @@
   flex-direction: column;
   flex: 80%;
   gap: 12px;
+  padding: 12px;
 }
 
 .footer {
@@ -32,6 +34,7 @@
 .row {
   display: flex;
   flex-direction: row;
+  padding: 12px;
 }
 
 .col {
@@ -53,4 +56,10 @@
   border: 0;
   padding: 15px;
   text-decoration: none;
+}
+
+.alert {
+  background-color: rgb(45, 45, 45);
+  border-radius: 12px;
+  width: 500px;
 }

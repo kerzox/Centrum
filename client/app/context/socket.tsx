@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import { eventHandler } from "./socket_events";
+import { Account } from "~/root";
 
 class ClientSocket {
   socket: WebSocket;
@@ -9,6 +10,40 @@ class ClientSocket {
   }
 
   emit = (key: string, data?: any, response?: (data: any) => void) => {
+    if (this.socket == null) return;
+    if (
+      this.socket.readyState == WebSocket.CLOSED ||
+      this.socket.readyState == WebSocket.CLOSING ||
+      this.socket.readyState == WebSocket.CONNECTING
+    )
+      return;
+
+    if (typeof window !== "undefined") {
+      const session = sessionStorage.getItem("user");
+      if (session != undefined) {
+        const acc = JSON.parse(session) as Account;
+
+        if (response != undefined) {
+          data.callback = 1;
+        }
+
+        data.authorisation = acc.token;
+
+        this.socket.send(
+          JSON.stringify({
+            eventKey: key,
+            data: data == undefined ? key : data,
+          })
+        );
+
+        if (response != undefined) {
+          eventHandler.once(key, response);
+        }
+
+        return;
+      }
+    }
+
     if (response != undefined) {
       data.callback = 1;
     }

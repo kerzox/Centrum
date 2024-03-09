@@ -13,14 +13,20 @@ import "./global.css";
 import { useEffect, useState } from "react";
 import { UserContext, WebSocketContext, connect } from "./context/socket";
 import { eventHandler } from "./context/socket_events";
-import { Account, AccountContext } from "./context/account";
+import { GlobalState, GlobalContext } from "./context/global_state";
 import Login from "./components/pages/login";
 import Alert from "./components/alert";
+
+export interface Account {
+  username: string;
+  token: string;
+}
 
 export default function App() {
   const location = useLocation();
   const [ctx, setSocket] = useState<UserContext>();
-  const [accountCtx, setAccountCtx] = useState<Account>(new Account());
+  const [accountCtx, setAccountCtx] = useState<GlobalState>(new GlobalState());
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const nav = useNavigate();
 
@@ -48,14 +54,19 @@ export default function App() {
       console.log("connection established");
       eventHandler.emit("connection", socket);
       nav("/");
-      setAccountCtx(new Account());
+      setAccountCtx(new GlobalState());
+
+      const session = sessionStorage.getItem("user");
+      if (session != null) {
+        const acc = JSON.parse(session) as Account;
+        socket.emit("reauthenticate", {});
+      }
     };
 
     socket.socket.onmessage = (e) => {
-      // get the event key and emit to event handler
-      const split = e.data.split("::");
-
-      eventHandler.emit(split[0], JSON.parse(split[1]));
+      const parsed = JSON.parse(e.data);
+      console.log(parsed);
+      eventHandler.emit(parsed.eventKey, parsed.data);
     };
 
     setSocket({
@@ -73,16 +84,27 @@ export default function App() {
       window.location.href = "/";
     });
 
-    eventHandler.on("login", (data: { status: number; token: string }) => {
-      if (data.status == 200) {
-        console.log(data);
-        let acc = new Account();
-        acc.username = "Admin";
-        acc.loggedin = true;
-        acc.token = data.token;
-        setAccountCtx(acc);
+    eventHandler.on(
+      "reauthenticate",
+      (response: { status: number; error: string }) => {
+        if (response.status != 200) {
+          if (response.status == 401) {
+            alert("Your session has expired please login again");
+          }
+          if (response.status == 403) {
+            alert(
+              "You're not authorised for this action\nIf you should be if may because of a malformed token try logging in again"
+            );
+          }
+          setTimeout(() => {
+            sessionStorage.removeItem("user");
+            setLoggedIn(false);
+          }, 1000);
+          return;
+        }
+        setLoggedIn(true);
       }
-    });
+    );
 
     eventHandler.on(
       "redirect",
@@ -98,7 +120,8 @@ export default function App() {
        If we are logged in return the navbar and outlet
        unless we are on the instance page we remove the navbar
      */
-    if (ctx?.socket.socket.readyState === 1 && accountCtx.loggedin) {
+
+    if (ctx?.socket.socket.readyState === 1 && loggedIn) {
       return location.pathname !== "/" ? (
         <>
           <NavBar />
@@ -108,12 +131,17 @@ export default function App() {
         <Outlet />
       );
     }
-
     /*
       otherwise return our login page
     */
 
-    return <Login />;
+    return (
+      <Login
+        state={(param: boolean | ((prevState: boolean) => boolean)) =>
+          setLoggedIn(param)
+        }
+      />
+    );
   };
 
   return (
@@ -138,11 +166,11 @@ export default function App() {
             flexDirection: "row",
           }}
         >
-          <AccountContext.Provider value={accountCtx}>
+          <GlobalContext.Provider value={accountCtx}>
             <WebSocketContext.Provider value={ctx}>
               {layout()}
             </WebSocketContext.Provider>
-          </AccountContext.Provider>
+          </GlobalContext.Provider>
         </div>
         <ScrollRestoration />
         <Scripts />

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { WebSocketContext } from "~/context/socket";
-import { AccountContext } from "~/context/account";
+import { GlobalContext } from "~/context/global_state";
 
 import styles from "../styles/file.module.css";
 import Button from "./button";
@@ -14,7 +14,7 @@ export default function OpenFile({
   };
 }) {
   const contextValue = useContext(WebSocketContext);
-  const accountValue = useContext(AccountContext);
+  const accountValue = useContext(GlobalContext);
 
   const [visible, toggle] = useState(false);
   const [text, changeText] = useState(content.fileContent.txt);
@@ -54,9 +54,8 @@ export default function OpenFile({
         <Button
           className={styles.button}
           onClick={() => {
-            contextValue?.socket.emitAndListenToSpecialKey(
+            contextValue?.socket.emit(
               "save_file",
-              "save_file_" + accountValue.instanceLastOn,
               {
                 instanceName: accountValue.instanceLastOn,
                 relativePath: content.fileContent.path,

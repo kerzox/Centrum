@@ -28,28 +28,21 @@ const Console = (props: any) => {
   // useEffect(() => {}, []);
 
   useEffect(() => {
-    contextValue?.socket.emitAndListenToSpecialKey(
-      "console_latest",
-      `console_${props.instanceName}_latest`,
-      { instanceName: props.instanceName },
+    contextValue?.socket.emit(
+      "instance_information",
+      { instanceName: props.instanceName, full_information: true },
       (response) => {
         updateConsoleLog([]);
-        updateConsoleLog(response.log);
+        updateConsoleLog(response.console_log);
       }
     );
 
-    eventHandler.unique(
-      `console_${props.instanceName}`,
-      `${props.instanceName}`,
-      (data: { output: string }) => {
-        updateConsoleLog((prevText: any) => [...prevText, data.output]);
-      }
-    );
+    eventHandler.on(`console`, (data: { output: string }) => {
+      updateConsoleLog((prevText: any) => [...prevText, data.output]);
+    });
 
     // internal event
-    eventHandler.unique("clean_console", `${props.instanceName}`, () =>
-      updateConsoleLog([])
-    );
+    eventHandler.on("clean_console", () => updateConsoleLog([]));
   }, []);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import styles from "../styles/instances.module.css";
 import Button from "~/components/button";
 import { useContext, useEffect, useRef, useState } from "react";
 import { WebSocketContext } from "~/context/socket";
-import { AccountContext } from "~/context/account";
+import { GlobalContext } from "~/context/global_state";
 import { json, useNavigate } from "@remix-run/react";
 import { M } from "node_modules/vite/dist/node/types.d-jgA8ss1A";
 import { eventHandler } from "~/context/socket_events";
@@ -30,7 +30,7 @@ export default function Instances() {
   const alertRef = useRef<HTMLDivElement>(null);
 
   const contextValue = useContext(WebSocketContext);
-  const accountValue = useContext(AccountContext);
+  const accountValue = useContext(GlobalContext);
 
   const [machineMemory, setMachineMemory] = useState(1024);
 
@@ -141,23 +141,17 @@ export default function Instances() {
       }
     );
 
-    if (accountValue.instanceLastOn != undefined) {
-      contextValue?.socket.emit("leave_instance", {
-        instanceName: accountValue.instanceLastOn,
-      });
-
-      // remove ourselves from unique events if we had any
-      eventHandler.wipeUniques(accountValue.instanceLastOn);
-      console.log(eventHandler);
-    }
-
     contextValue?.socket.emit("grab_instances", {});
 
-    eventHandler.unique(
+    eventHandler.on(
       "grab_instances",
-      "instance_page",
-      ({ instances }: { instances: any }) => {
-        const parsed: Instance[] = JSON.parse(instances);
+      (response: { status: number; instances: string; error?: string }) => {
+        if (response.status === 403) {
+          console.log(response.error);
+          return;
+        }
+
+        const parsed: Instance[] = JSON.parse(response.instances);
         setInstanceList(parsed);
       }
     );

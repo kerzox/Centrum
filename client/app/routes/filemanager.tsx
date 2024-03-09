@@ -2,12 +2,13 @@ import { useContext, useEffect, useRef, useState } from "react";
 import styles from "../styles/filemanager.module.css";
 import Button from "~/components/button";
 import { WebSocketContext } from "~/context/socket";
-import { Account, AccountContext } from "~/context/account";
+import { GlobalState, GlobalContext } from "~/context/global_state";
 import { json } from "@remix-run/node";
 import OpenFile from "~/components/file";
 import ContextMenu from "~/components/contextMenu";
 import Trash from "~/components/icons/trash";
 import { useNavigate } from "@remix-run/react";
+import { eventHandler } from "~/context/socket_events";
 
 const supportedFiles: string[] = ["txt", "properties", "json", "log"];
 
@@ -43,7 +44,7 @@ class Directory {
 export default function FileManager() {
   const nav = useNavigate();
   const socketContext = useContext(WebSocketContext);
-  const accountContext = useContext(AccountContext);
+  const accountContext = useContext(GlobalContext);
   const [directories, setDirectories] = useState<Directory>(
     new Directory("", 0, 0)
   );
@@ -67,55 +68,50 @@ export default function FileManager() {
   const [contextItems, setContextItems] = useState<any>();
 
   useEffect(() => {
-    if (accountContext.instanceLastOn != undefined) {
-      createFileExplorer();
+    if (accountContext.instanceLastOn != null) {
+      socketContext?.socket.emit("file_manager", {
+        instanceName: accountContext.instanceLastOn,
+        relativePath: relativePath,
+      });
     }
+    eventHandler.on("file_manager", (response: any) => {
+      createFileExplorer(response.content);
+    });
   }, []);
 
-  const createFileExplorer = (): Directory => {
-    socketContext?.socket.emit(
-      "file_manager",
-      {
-        instanceName: accountContext.instanceLastOn,
-        relativePath: "",
-      },
-      (response) => {
-        let ID = 0;
+  const createFileExplorer = (content: string) => {
+    let ID = 0;
 
-        const func = (path: string, json: JsonDir, increment: number) => {
-          ID++;
-          let parent = new Directory(json.name, increment, ID);
-          parent.path = path === "" ? json.name : path + "/" + json.name;
-          if (increment == 0) {
-            parent.hidden = false;
-          }
-          increment = increment + 1;
-
-          json.children.forEach((child: JsonDir) => {
-            let dir = func(parent.path, child, increment);
-            dir.parent = parent;
-            parent.children.push(dir);
-          });
-          return parent;
-        };
-
-        interface JsonDir {
-          name: string;
-          children: any[];
-        }
-
-        if (accountContext.instanceLastOn != undefined) {
-          const parsed: JsonDir = JSON.parse(response.content);
-
-          let increment = 0;
-          let root = func("", parsed, increment);
-
-          setDirectories(root);
-          return root;
-        }
+    const func = (path: string, json: JsonDir, increment: number) => {
+      ID++;
+      let parent = new Directory(json.name, increment, ID);
+      parent.path = path === "" ? json.name : path + "/" + json.name;
+      if (increment == 0) {
+        parent.hidden = false;
       }
-    );
-    return null;
+      increment = increment + 1;
+
+      json.children.forEach((child: JsonDir) => {
+        let dir = func(parent.path, child, increment);
+        dir.parent = parent;
+        parent.children.push(dir);
+      });
+      return parent;
+    };
+
+    interface JsonDir {
+      name: string;
+      children: any[];
+    }
+
+    if (accountContext.instanceLastOn != undefined) {
+      const parsed: JsonDir = JSON.parse(content);
+
+      let increment = 0;
+      let root = func("", parsed, increment);
+
+      setDirectories(root);
+    }
   };
 
   const active = (directory: Directory) => {
@@ -200,9 +196,8 @@ export default function FileManager() {
 
                   setFiles([]);
                   if (accountContext.instanceLastOn != undefined) {
-                    socketContext?.socket.emitAndListenToSpecialKey(
+                    socketContext?.socket.emit(
                       "file_manager_files",
-                      `file_manager_files_${accountContext.instanceLastOn}`,
                       {
                         instanceName: accountContext.instanceLastOn,
                         relativePath: directory.path
@@ -498,7 +493,10 @@ export default function FileManager() {
             return;
           }
 
-          createFileExplorer();
+          socketContext?.socket.emit("file_manager", {
+            instanceName: accountContext.instanceLastOn,
+            relativePath: "",
+          });
           // setTimeout(() => , 1000);
         }
       );
@@ -533,7 +531,10 @@ export default function FileManager() {
           }
 
           if (type === "directory") {
-            createFileExplorer();
+            socketContext?.socket.emit("file_manager", {
+              instanceName: accountContext.instanceLastOn,
+              relativePath: "",
+            });
           }
         }
       );
@@ -573,7 +574,10 @@ export default function FileManager() {
           alert(response.error);
           return;
         }
-        createFileExplorer();
+        socketContext?.socket.emit("file_manager", {
+          instanceName: accountContext.instanceLastOn,
+          relativePath: "",
+        });
       }
     );
   };
@@ -586,9 +590,8 @@ export default function FileManager() {
       .substring(1);
 
     if (supportedFiles.includes(extension[1])) {
-      socketContext?.socket.emitAndListenToSpecialKey(
+      socketContext?.socket.emit(
         "get_file",
-        `get_file_${accountContext.instanceLastOn}`,
         {
           instanceName: accountContext.instanceLastOn,
           relativePath: path === "" ? file.name : path + "/" + file.name,

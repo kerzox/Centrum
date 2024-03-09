@@ -9,7 +9,7 @@ import Stop from "~/components/icons/stop";
 import Restart from "~/components/icons/restart";
 import { eventHandler } from "~/context/socket_events";
 import ProgressBar from "~/components/progressBar";
-import { AccountContext } from "~/context/account";
+import { GlobalContext } from "~/context/global_state";
 import { Link, useNavigate } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
@@ -21,7 +21,7 @@ export const meta: MetaFunction = () => {
 
 export default function Dashboard() {
   const contextValue = useContext(WebSocketContext);
-  const accountContext = useContext(AccountContext);
+  const accountContext = useContext(GlobalContext);
   const nav = useNavigate();
 
   const [connected, setConnected] = useState(false);
@@ -51,13 +51,12 @@ export default function Dashboard() {
 
     contextValue?.socket.emit("instance_information", {
       instanceName: accountContext.instanceLastOn,
+      full_information: true,
     });
 
-    eventHandler.unique(
+    eventHandler.on(
       "instance_information",
-      `${accountContext.instanceLastOn}`,
       (data: { state: string; ops: any }) => {
-        console.log(data);
         if (data.state === "running") {
           setInstanceRunning(true);
         } else if (data.state === "stopped") {
