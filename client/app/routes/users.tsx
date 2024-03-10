@@ -48,7 +48,7 @@ export default function Settings() {
 
   const [isBannedTab, setBannedTab] = useState<boolean>(false);
 
-  const createPlayerCards = async (players: any[], consumer: any) => {
+  const createPlayerCards = async (players: any[]) => {
     const playerElements: any[] = [];
     if (players == undefined) return;
 
@@ -224,8 +224,8 @@ export default function Settings() {
       bannedPlayerInformation != undefined
     ) {
       console.log(bannedPlayerInformation);
-      createPlayerCards(serverPingResponse.players.sample, setPlayers);
-      createBannedPlayerCards(bannedPlayerInformation, setBannedPlayers);
+      createPlayerCards(serverPingResponse.players.sample);
+      createBannedPlayerCards(bannedPlayerInformation);
     }
   }, [instanceInformation, serverPingResponse]);
 
