@@ -1,0 +1,2 @@
+C:\Users\willi\source\repos\CentrumConsole\CentrumConsole\bin\Release\net8.0\publish\win-x64\CentrumConsole.pdb
+C:\Users\willi\source\repos\CentrumConsole\CentrumConsole\bin\Release\net8.0\publish\win-x64\CentrumConsole.exe

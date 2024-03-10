@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "+Ve5vX9/iHoh44iEQbNpnC7EFHLd65/jrmb2pVRgTSJxs91o4oVRuMIGmG70gQftUqjsrTg0aD0Nzn41zvcjsw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\willi\\Documents\\GitHub\\MinecraftServerPanel\\centrum\\CentrumConsole.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\willi\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
+    "C:\\Users\\willi\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.4.0\\microsoft.identitymodel.abstractions.7.4.0.nupkg.sha512",
+    "C:\\Users\\willi\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.4.0\\microsoft.identitymodel.jsonwebtokens.7.4.0.nupkg.sha512",
+    "C:\\Users\\willi\\.nuget\\packages\\microsoft.identitymodel.logging\\7.4.0\\microsoft.identitymodel.logging.7.4.0.nupkg.sha512",
+    "C:\\Users\\willi\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.4.0\\microsoft.identitymodel.tokens.7.4.0.nupkg.sha512",
+    "C:\\Users\\willi\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.2\\microsoft.net.illink.tasks.8.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}
